@@ -166,15 +166,37 @@ def Search(node, d, timer, inc):
     p_key = chess.polyglot.zobrist_hash(node)
     game_phase = evaluate.getPieceInfo(node)[2]
 
-    bell_max = (timer / 20) * 0.5 * (math.sin(math.pi * game_phase)) ** 2 + 1000
+    #bell_max = (timer / 20) * 0.5 * (math.sin(math.pi * game_phase)) ** 2 + 1000
+    logistic_max = (timer / 20)/(1 + math.pow(math.e, game_phase))
 
-    allowedTime = (bell_max + inc / 2) / 1000 + time.perf_counter()
+    allowedTime = (logistic_max + inc / 2) / 1000 + time.perf_counter()
     timeSpent = time.perf_counter()
     depth = 1
     bestinfo = []
 
+    window = 50 #centipawns
+    value = 0
+
     while depth <= d:
-        value = PVS(node, depth, -float('inf'), float('inf'), timeSpent, allowedTime)
+        if depth == 1:
+            a = -float('inf')
+            b = float('inf')
+        else:
+            a = value - window
+            b = value + window
+
+        value = PVS(node, depth, a, b, timeSpent, allowedTime)
+        timeSpent = time.perf_counter()
+
+        if value == None:
+            return bestinfo
+
+        if value <= a:
+            value = PVS(node, depth, -float('inf'), b, timeSpent, allowedTime)
+        elif value >= b:
+            value = PVS(node, depth, a, float('inf'), timeSpent, allowedTime)
+        timeSpent = time.perf_counter()
+
         info = table.getValue(p_key)
 
         if info == None:
@@ -183,9 +205,11 @@ def Search(node, d, timer, inc):
         bestinfo = [info['bestMove'], info['value'], depth]
 
         if value == None:
+            #print(f"info depth {depth}")
             return bestinfo 
 
         depth += 1
+    #print(f"info depth {d}")
     return bestinfo
 
 #Search(board, 10, 100000, 0)
