@@ -4,7 +4,8 @@ from operator import itemgetter
 import time
 import math
 
-from pChess import evaluate
+#from pChess 
+import evaluate
 
 board = chess.Board()
 
