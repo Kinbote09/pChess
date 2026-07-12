@@ -208,6 +208,9 @@ def evaluate(node, depth):
             return -(100000000 + depth * 1000)
         else:
             return 0
+    
+    #dumb evaluations
+    mobility_score = 10 * len(list(node.legal_moves))
 
     for index, square in enumerate(chess.SQUARES):
         piece = node.piece_at(square)
@@ -279,10 +282,13 @@ def evaluate(node, depth):
                     mg_squareCount -= mg_king_table[63 - agj_index]
                     eg_squareCount -= eg_king_table[63 - agj_index]
                     b_king_pos = agj_index
-    gamePhase = (7800 - abs_pieceCount) / 7800 #DEPENDENT ON PIECE VALUES
+
+    startingAbsVal = 16 * PAWN_VALUE + 4 * KNIGHT_VALUE + 4 * BISHOP_VALUE + 4 * ROOK_VALUE + 2 * QUEEN_VALUE
+    gamePhase = (startingAbsVal - abs_pieceCount) / startingAbsVal #DEPENDENT ON PIECE VALUES
+
     king_dist_score = (abs(w_king_pos // 8 - b_king_pos // 8) + abs(w_king_pos % 8 - b_king_pos % 8))
     
-    return (pieceCount + king_dist_score + mg_squareCount * (1 - gamePhase) + eg_squareCount * (gamePhase)) * turn
+    return (pieceCount + king_dist_score + mobility_score + mg_squareCount * (1 - gamePhase) + eg_squareCount * (gamePhase)) * turn
 
 #dummy = chess.Board("5k2/5Q2/4K3/8/8/8/8/8 b - - 0 1")
 #print(evaluate(dummy, 1))

@@ -3,9 +3,9 @@ import chess.polyglot
 from operator import itemgetter
 import time
 import math
+import random
 
-#from pChess 
-import evaluate
+from pChess import evaluate
 
 board = chess.Board()
 
@@ -13,6 +13,15 @@ board = chess.Board()
 
 #board.set_fen(startFEN)
 
+def getBookMove(node):
+    with chess.polyglot.open_reader("/Users/henrylynch/Desktop/Code/Python_/pChess/lichess-bot/pChess/baron30.bin") as file:
+        entries = list(file.find_all(node))
+        if entries:
+            entry = random.choice(entries)
+            return entry.move
+        else:
+            return None
+        
 EXACT = 0
 LOWERBOUND = 1
 UPPERBOUND = 2
@@ -161,20 +170,30 @@ def PVS(node, depth, a, b, timeS, timeA):
     table.store(key, depth, a, flag, bestMove)
     return a
 
-def Search(node, d, timer, inc):
+def Search(node, d, timer, inc, smartTime):
     table.clear()
     p_key = chess.polyglot.zobrist_hash(node)
-    game_phase = evaluate.getPieceInfo(node)[2]
 
-    #bell_max = (timer / 20) * 0.5 * (math.sin(math.pi * game_phase)) ** 2 + 1000
-    logistic_max = (timer / 20)/(1 + math.pow(math.e, game_phase))
+    book = getBookMove(node)
+    if book != None:
+        info = [book, "book", 0]
+        return info
 
-    allowedTime = (logistic_max + inc / 2) / 1000 + time.perf_counter()
+    if smartTime:
+        game_phase = evaluate.getPieceInfo(node)[2]
+
+        #bell_max = (timer / 20) * 0.5 * (math.sin(math.pi * game_phase)) ** 2 + 1000
+        logistic_max = (timer / 20)/(1 + math.pow(math.e, game_phase))
+
+        allowedTime = (logistic_max + inc / 2) / 1000 + time.perf_counter()
+    else:
+        allowedTime = timer / 1000 + time.perf_counter()
+
     timeSpent = time.perf_counter()
     depth = 1
     bestinfo = []
 
-    window = 50 #centipawns
+    window = 15 #centipawns
     value = 0
 
     while depth <= d:

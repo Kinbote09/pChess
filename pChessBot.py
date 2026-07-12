@@ -48,17 +48,16 @@ def UCI():
                 
             key = chess.polyglot.zobrist_hash(board)
             if board.turn:
-                info = searcher.Search(board, depth, wtime, winc)
+                info = searcher.Search(board, depth, wtime, winc, False)
             else:
-                info = searcher.Search(board, depth, btime, binc)
+                info = searcher.Search(board, depth, btime, binc, False)
 
             if info == None:
                 print("bestmove resign")
                 continue
 
             print(f"bestmove {info[0]}")
-            print(f"info score cp {info[1]}")
-            print(f"info depth {info[2]}")
+            print(f"info depth {info[2]} score cp {info[1]}")
         elif parts[0] == "quit":
             break
 
