@@ -1,3 +1,5 @@
+A simple engine written entirely in Python (~1750 Lichess Elo)
+
 This engine has two modes:
 1. UCI Interface
     - keep "import evaluate"
